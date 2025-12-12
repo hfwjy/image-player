@@ -1,0 +1,189 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地图片时序播放器 - 48张顺序图片滚动显示</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 标题栏 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-images"></i>
+                <h1>时序图片播放器</h1>
+            </div>
+            <div class="subtitle">本地48张顺序图片滚动显示 + 时间进度条</div>
+            <div class="status-indicator" id="statusIndicator">
+                <i class="fas fa-circle" id="statusIcon"></i>
+                <span id="statusText">加载中...</span>
+            </div>
+        </header>
+
+        <!-- 主显示区域 -->
+        <main class="main-content">
+            <!-- 图片显示区域 -->
+            <div class="image-container">
+                <div class="image-wrapper" id="imageWrapper">
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>加载图片数据...</p>
+                    </div>
+                    <img id="currentImage" alt="当前图片" style="display: none;">
+                    <div class="image-info-overlay">
+                        <div class="time-info">
+                            <span class="time-label" id="timeLabel">+00h</span>
+                            <span class="time-full" id="fullTime">2024-01-01 00:00</span>
+                        </div>
+                        <div class="index-info">
+                            图片 <span id="currentIndex">1</span> / <span id="totalImages">48</span>
+                        </div>
+                    </div>
+                    <div class="no-image-message" id="noImageMessage" style="display: none;">
+                        <i class="fas fa-image fa-3x"></i>
+                        <h3>暂无图片</h3>
+                        <p>请将图片文件放入 <code>static/images/</code> 文件夹</p>
+                    </div>
+                </div>
+                
+                <!-- 图片缩略图导航 -->
+                <div class="thumbnail-nav" id="thumbnailNav">
+                    <div class="thumbnail-container" id="thumbnailContainer">
+                        <!-- 缩略图将通过JavaScript动态生成 -->
+                    </div>
+                    <button class="nav-btn prev-thumbs" id="prevThumbs">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="nav-btn next-thumbs" id="nextThumbs">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <!-- 时间进度条 -->
+                <div class="time-progress-section">
+                    <div class="time-labels">
+                        <span class="start-time">起始 (+00h)</span>
+                        <span class="current-time-display" id="currentTimeDisplay">当前: +00h</span>
+                        <span class="end-time">结束 (+47h)</span>
+                    </div>
+                    <div class="progress-container">
+                        <input type="range" id="timeSlider" class="time-slider" 
+                               min="0" max="47" value="0" step="1">
+                        <div class="progress-bar-bg" id="progressBarBg"></div>
+                    </div>
+                </div>
+
+                <!-- 播放控制按钮 -->
+                <div class="playback-controls">
+                    <button class="control-btn" id="firstBtn" title="第一张">
+                        <i class="fas fa-fast-backward"></i>
+                    </button>
+                    <button class="control-btn" id="prevBtn" title="上一张">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-pause-btn" id="playPauseBtn" title="播放/暂停">
+                        <i class="fas fa-play" id="playIcon"></i>
+                        <i class="fas fa-pause" id="pauseIcon" style="display: none;"></i>
+                    </button>
+                    <button class="control-btn" id="nextBtn" title="下一张">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="control-btn" id="lastBtn" title="最后一张">
+                        <i class="fas fa-fast-forward"></i>
+                    </button>
+                </div>
+
+                <!-- 速度控制 -->
+                <div class="speed-controls">
+                    <span class="speed-label">播放速度:</span>
+                    <div class="speed-buttons">
+                        <button class="speed-btn" data-speed="2000">慢速</button>
+                        <button class="speed-btn active" data-speed="1000">中速</button>
+                        <button class="speed-btn" data-speed="500">快速</button>
+                        <button class="speed-btn" data-speed="250">极速</button>
+                    </div>
+                    <div class="custom-speed">
+                        <label for="customSpeedInput">自定义 (毫秒):</label>
+                        <input type="number" id="customSpeedInput" min="100" max="5000" value="1000" step="100">
+                        <button class="small-btn" id="applySpeedBtn">应用</button>
+                    </div>
+                </div>
+
+                <!-- 其他控制选项 -->
+                <div class="additional-controls">
+                    <div class="control-option">
+                        <input type="checkbox" id="loopPlayback" checked>
+                        <label for="loopPlayback">循环播放</label>
+                    </div>
+                    <div class="control-option">
+                        <input type="checkbox" id="showThumbnails" checked>
+                        <label for="showThumbnails">显示缩略图</label>
+                    </div>
+                    <div class="control-option">
+                        <input type="checkbox" id="autoHideControls">
+                        <label for="autoHideControls">自动隐藏控制栏</label>
+                    </div>
+                    <button class="action-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> 刷新图片列表
+                    </button>
+                </div>
+            </div>
+
+            <!-- 图片信息面板 -->
+            <div class="info-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-info-circle"></i> 图片信息</h3>
+                </div>
+                <div class="panel-content">
+                    <div class="info-item">
+                        <span class="info-label">文件名:</span>
+                        <span class="info-value" id="infoFilename">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">时间:</span>
+                        <span class="info-value" id="infoTimestamp">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">索引:</span>
+                        <span class="info-value" id="infoIndex">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">进度:</span>
+                        <span class="info-value" id="infoProgress">0/48 (0%)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">播放状态:</span>
+                        <span class="info-value" id="infoStatus">已停止</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">速度:</span>
+                        <span class="info-value" id="infoSpeed">1000 ms/帧</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>本地图片时序播放器 | 共 <span id="footerImageCount">0</span> 张图片 | 
+                    当前: <span id="footerCurrentIndex">0</span> | 
+                    状态: <span id="footerStatus">加载中</span></p>
+                <p class="footer-help">
+                    <i class="fas fa-lightbulb"></i> 提示: 将图片文件放入 <code>static/images/</code> 文件夹，命名格式如 <code>frame_001.jpg</code>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript文件 -->
+    <script src="{{ url_for('static', filename='js/player.js') }}"></script>
+</body>
+</html>
