@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import shutil
+from PIL import Image
+import io
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -88,12 +90,33 @@ def upload_images():
                 extension = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
                 new_filename = f"{i+1:03d}.{extension}"
                 filepath = os.path.join(target_folder, new_filename)
-                file.save(filepath)
-                uploaded_files.append(new_filename)
+                
+                # 压缩图片以减少大小
+                try:
+                    img = Image.open(file.stream)
+                    
+                    # 将图片转换为RGB模式（如果是RGBA）
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        img = img.convert('RGB')
+                    
+                    # 调整图片大小（最大宽度1920像素）
+                    max_width = 1920
+                    if img.width > max_width:
+                        ratio = max_width / img.width
+                        new_height = int(img.height * ratio)
+                        img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+                    
+                    # 保存压缩后的图片
+                    img.save(filepath, 'JPEG', quality=85, optimize=True)
+                    uploaded_files.append(new_filename)
+                except Exception as e:
+                    print(f"图片压缩失败: {e}")
+                    # 如果压缩失败，保存原始文件
+                    file.save(filepath)
+                    uploaded_files.append(new_filename)
             else:
                 return jsonify({'error': f'文件 {file.filename if file else "未知"} 格式不支持'}), 400
         
-        # 如果上传的文件少于48张，可以创建占位符或直接使用
         print(f"成功上传 {len(uploaded_files)} 张图片到 {category}")
         
         return jsonify({

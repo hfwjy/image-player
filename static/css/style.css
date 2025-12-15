@@ -17,99 +17,96 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 10px 15px;
+    padding: 8px 12px;
 }
 
 .header {
     text-align: center;
-    margin-bottom: 15px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 12px;
-    backdrop-filter: blur(12px);
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .category-buttons {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .category-btn {
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
     background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
-    border-radius: 30px;
+    border-radius: 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .category-btn:hover {
     background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 136, 255, 0.3));
+    background: rgba(0, 255, 136, 0.2);
     border-color: #00ff88;
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
 }
 
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 .control-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.25);
-    padding: 12px 20px;
-    border-radius: 12px;
-    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .playback-controls {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
 .playback-controls span {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    white-space: nowrap;
 }
 
 .speed-select {
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    min-width: 70px;
 }
 
 .speed-select:hover {
@@ -117,116 +114,121 @@ body {
 }
 
 .play-btn, .upload-toggle-btn {
-    padding: 8px 18px;
-    background: linear-gradient(135deg, #00ff88, #0088ff);
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    font-size: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 6px;
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    gap: 4px;
+    min-width: 36px;
+    justify-content: center;
 }
 
 .play-btn:hover, .upload-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.play-btn.active {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
 }
 
 .upload-toggle-btn {
-    background: linear-gradient(135deg, #ff7b00, #ff5500);
-    box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
-}
-
-.upload-toggle-btn:hover {
-    box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
+    background: rgba(255, 123, 0, 0.2);
+    border-color: rgba(255, 123, 0, 0.3);
 }
 
 .time-display {
     display: flex;
     align-items: center;
-    gap: 10px;
 }
 
 #currentImageTime {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     color: #00ff88;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
 }
 
-/* 图片容器 - 关键修改 */
+/* 图片容器 - 缩小并优化 */
 .image-container {
     flex: 1;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 65vh;
-    padding: 20px;
-    overflow: visible;
-    backdrop-filter: blur(12px);
+    min-height: 45vh;  /* 缩小高度 */
+    max-height: 45vh;  /* 限制最大高度 */
+    padding: 10px;
+    overflow: hidden;  /* 防止内容溢出 */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    will-change: transform;  /* 硬件加速优化 */
+    transform: translateZ(0);  /* 强制GPU加速 */
 }
 
 .no-images {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.6);
     text-align: center;
-    padding: 40px;
+    padding: 20px;
 }
 
 .no-images i {
-    margin-bottom: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.4);
 }
 
-/* 图片样式 - 关键修改 */
+.no-images p {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* 图片样式 - 优化显示和性能 */
 .weather-image {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: contain;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.5s ease;
-    transition: transform 0.3s ease;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;  /* 保持比例完整显示 */
+    border-radius: 4px;
+    image-rendering: -webkit-optimize-contrast;  /* 图片渲染优化 */
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;  /* 避免重绘 */
+    transform: translateZ(0);  /* GPU加速 */
+    transition: opacity 0.3s ease;  /* 淡入效果 */
 }
 
-.weather-image:hover {
-    transform: scale(1.01);
-}
-
-/* 图片时间覆盖层 - 修改为左下角 */
+/* 图片时间覆盖层 - 左下角 */
 .image-time-overlay {
     position: absolute;
-    bottom: 25px;
-    left: 25px;
-    background: rgba(0, 0, 0, 0.75);
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
     color: white;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 10;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 /* 图片加载容器 */
@@ -237,43 +239,38 @@ body {
     align-items: center;
     width: 100%;
     height: 100%;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    overflow: hidden;  /* 确保图片不超出容器 */
 }
 
 .progress-container {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 18px 20px;
-    border-radius: 12px;
-    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .time-slider {
     width: 100%;
-    height: 8px;
+    height: 6px;
     -webkit-appearance: none;
     appearance: none;
     background: linear-gradient(90deg, #00ff88, #0088ff);
-    border-radius: 4px;
+    border-radius: 3px;
     outline: none;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .time-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
-    border: 3px solid #00ff88;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    border: 2px solid #00ff88;
+    box-shadow: 0 0 6px rgba(0, 255, 136, 0.4);
     transition: all 0.2s ease;
 }
 
@@ -282,44 +279,37 @@ body {
 }
 
 .time-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
-    border: 3px solid #00ff88;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid #00ff88;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
 .time-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.time-labels span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .upload-section {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 25px;
-    border-radius: 12px;
-    margin-top: 15px;
-    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease;
+    animation: slideUp 0.2s ease;
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -329,7 +319,7 @@ body {
 
 .upload-controls {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
@@ -337,15 +327,14 @@ body {
 
 #categorySelect,
 #fileInput {
-    padding: 10px 15px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 8px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    font-size: 14px;
-    backdrop-filter: blur(10px);
-    min-width: 150px;
-    transition: all 0.3s ease;
+    font-size: 12px;
+    min-width: 120px;
+    transition: all 0.2s ease;
 }
 
 #categorySelect:hover, #fileInput:hover {
@@ -354,18 +343,18 @@ body {
 
 #fileInput {
     flex: 1;
-    max-width: 300px;
+    max-width: 200px;
 }
 
 #fileInput::-webkit-file-upload-button {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
     cursor: pointer;
-    margin-right: 15px;
-    transition: all 0.3s ease;
+    margin-right: 8px;
+    transition: all 0.2s ease;
 }
 
 #fileInput::-webkit-file-upload-button:hover {
@@ -373,120 +362,77 @@ body {
 }
 
 .upload-btn {
-    padding: 10px 24px;
-    background: linear-gradient(135deg, #ff7b00, #ff5500);
+    padding: 6px 12px;
+    background: rgba(255, 123, 0, 0.3);
     color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 600;
+    border: 1px solid rgba(255, 123, 0, 0.4);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
+    gap: 6px;
 }
 
 .upload-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
+    background: rgba(255, 123, 0, 0.4);
+    transform: translateY(-1px);
 }
 
 .upload-status {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 8px;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 6px;
     text-align: center;
-    min-height: 20px;
-    font-size: 14px;
+    min-height: 18px;
+    font-size: 12px;
     transition: all 0.3s ease;
 }
 
 .upload-status.success {
-    background: rgba(0, 255, 136, 0.15);
+    background: rgba(0, 255, 136, 0.1);
     color: #00ff88;
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(0, 255, 136, 0.2);
 }
 
 .upload-status.error {
-    background: rgba(255, 68, 68, 0.15);
+    background: rgba(255, 68, 68, 0.1);
     color: #ff4444;
-    border: 1px solid rgba(255, 68, 68, 0.3);
-}
-
-/* 图片加载动画 */
-.image-loading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 16px;
-}
-
-/* 图片错误状态 */
-.image-error {
-    text-align: center;
-    color: #ff4444;
-    padding: 40px;
-    font-size: 18px;
-}
-
-/* 选择框样式增强 */
-#categorySelect option {
-    background-color: #1a2980;
-    color: white;
-}
-
-/* 禁用按钮样式 */
-.category-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.category-btn:disabled:hover {
-    transform: none;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: none;
-}
-
-/* 上传状态样式增强 */
-.upload-status.warning {
-    background: rgba(255, 204, 0, 0.15);
-    color: #ffcc00;
-    border: 1px solid rgba(255, 204, 0, 0.3);
+    border: 1px solid rgba(255, 68, 68, 0.2);
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
-    .image-container {
-        min-height: 60vh;
-    }
-}
-
 @media (max-width: 768px) {
+    .container {
+        padding: 6px 8px;
+    }
+    
+    .header {
+        padding: 8px 10px;
+        margin-bottom: 8px;
+    }
+    
     .category-buttons {
-        flex-direction: column;
-        align-items: center;
+        gap: 6px;
     }
     
     .category-btn {
-        width: 100%;
-        max-width: 280px;
-        padding: 10px 20px;
-        font-size: 15px;
+        padding: 6px 12px;
+        font-size: 13px;
     }
     
     .control-bar {
         flex-direction: column;
-        gap: 15px;
+        gap: 8px;
         align-items: stretch;
+        padding: 8px;
     }
     
     .playback-controls {
         width: 100%;
-        justify-content: center;
+        justify-content: space-between;
     }
     
     .time-display {
@@ -495,19 +441,25 @@ body {
     }
     
     .image-container {
-        min-height: 55vh;
-        padding: 15px;
+        min-height: 40vh;
+        max-height: 40vh;
+        padding: 8px;
     }
     
     .image-time-overlay {
-        bottom: 15px;
-        left: 15px;
-        font-size: 14px;
-        padding: 8px 16px;
+        bottom: 10px;
+        left: 10px;
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    #currentImageTime {
+        font-size: 13px;
     }
     
     .upload-controls {
         flex-direction: column;
+        gap: 6px;
     }
     
     #categorySelect,
@@ -515,85 +467,63 @@ body {
         width: 100%;
         max-width: 100%;
     }
-    
-    .upload-btn {
-        width: 100%;
-    }
 }
 
 @media (max-width: 480px) {
+    .category-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
     .playback-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .speed-select {
-        width: 100%;
-    }
-    
-    .play-btn, .upload-toggle-btn {
-        width: 100%;
+        flex-wrap: wrap;
         justify-content: center;
     }
     
+    .speed-select {
+        flex: 1;
+    }
+    
+    .play-btn, .upload-toggle-btn {
+        min-width: 32px;
+        padding: 4px 8px;
+    }
+    
     .image-container {
-        min-height: 50vh;
-        padding: 10px;
+        min-height: 35vh;
+        max-height: 35vh;
     }
     
     .image-time-overlay {
-        bottom: 10px;
-        left: 10px;
-        font-size: 12px;
-        padding: 6px 12px;
+        bottom: 8px;
+        left: 8px;
+        font-size: 10px;
+        padding: 3px 6px;
     }
     
     #currentImageTime {
-        font-size: 14px;
+        font-size: 12px;
+    }
+    
+    .time-labels {
+        font-size: 10px;
     }
 }
 
-/* 全屏查看图片 */
-.fullscreen-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    cursor: pointer;
+/* 性能优化类 */
+.performance-optimized {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
 }
 
-.fullscreen-image {
-    max-width: 95%;
-    max-height: 95%;
-    object-fit: contain;
-}
-
-.close-fullscreen {
+/* 图片预加载容器（隐藏） */
+.image-preloader {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    font-size: 24px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.close-fullscreen:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
 }

@@ -29,20 +29,20 @@
         <div class="main-content">
             <div class="control-bar">
                 <div class="playback-controls">
-                    <span><i class="fas fa-tachometer-alt"></i> 播放速度:</span>
+                    <span><i class="fas fa-tachometer-alt"></i> 速度:</span>
                     <select id="playbackSpeed" class="speed-select">
-                        <option value="5000">0.5倍</option>
-                        <option value="3000">0.8倍</option>
-                        <option value="2000" selected>1倍</option>
-                        <option value="1000">2倍</option>
-                        <option value="500">4倍</option>
-                        <option value="250">8倍</option>
+                        <option value="5000">0.5x</option>
+                        <option value="3000">0.8x</option>
+                        <option value="2000" selected>1x</option>
+                        <option value="1000">2x</option>
+                        <option value="500">4x</option>
+                        <option value="250">8x</option>
                     </select>
                     <button id="playPauseBtn" class="play-btn">
-                        <i class="fas fa-pause"></i> 暂停
+                        <i class="fas fa-pause"></i>
                     </button>
                     <button id="uploadToggleBtn" class="upload-toggle-btn">
-                        <i class="fas fa-cloud-upload-alt"></i> 上传数据
+                        <i class="fas fa-cloud-upload-alt"></i>
                     </button>
                 </div>
                 <div class="time-display" id="timeDisplay">
@@ -53,7 +53,7 @@
             <div class="image-container" id="imageContainer">
                 <!-- 图片将在这里显示 -->
                 <div class="no-images">
-                    <i class="fas fa-cloud-sun fa-3x"></i>
+                    <i class="fas fa-cloud-sun fa-2x"></i>
                     <p>请上传图片数据</p>
                 </div>
             </div>
@@ -61,10 +61,10 @@
             <div class="progress-container">
                 <input type="range" id="timeSlider" class="time-slider" min="1" max="48" value="1">
                 <div class="time-labels">
-                    <span><i class="far fa-clock"></i> 01:00</span>
+                    <span>01:00</span>
                     <span>12:00</span>
                     <span>23:00</span>
-                    <span><i class="fas fa-clock"></i> 次日00:00</span>
+                    <span>次日00:00</span>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@
             <form id="uploadForm">
                 <div class="upload-controls">
                     <select id="categorySelect" required>
-                        <option value="">选择数据类别</option>
+                        <option value="">选择类别</option>
                         <option value="台海温度">台海温度</option>
                         <option value="台海风速">台海风速</option>
                         <option value="西藏温度">西藏温度</option>
@@ -81,7 +81,7 @@
                     </select>
                     <input type="file" id="fileInput" multiple accept="image/*" required>
                     <button type="submit" class="upload-btn">
-                        <i class="fas fa-upload"></i> 上传图片
+                        <i class="fas fa-upload"></i> 上传
                     </button>
                 </div>
                 <div class="upload-status" id="uploadStatus"></div>

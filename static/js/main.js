@@ -5,8 +5,10 @@ class WeatherDisplay {
         this.images = {};
         this.autoPlayInterval = null;
         this.isPlaying = true;
-        this.playbackSpeed = 2000; // 默认1倍速
+        this.playbackSpeed = 2000;
         this.isUploadSectionVisible = false;
+        this.imageCache = new Map(); // 图片缓存
+        this.isTransitioning = false; // 防止快速切换
         
         this.init();
     }
@@ -26,11 +28,15 @@ class WeatherDisplay {
             });
         });
 
-        // 时间滑块事件
+        // 时间滑块事件 - 使用防抖
         const slider = document.getElementById('timeSlider');
+        let sliderTimeout;
         slider.addEventListener('input', (e) => {
-            this.stopAutoPlay();
-            this.showImage(parseInt(e.target.value) - 1);
+            clearTimeout(sliderTimeout);
+            sliderTimeout = setTimeout(() => {
+                this.stopAutoPlay();
+                this.showImage(parseInt(e.target.value) - 1);
+            }, 50); // 50ms防抖
         });
 
         // 播放速度选择事件
@@ -66,20 +72,33 @@ class WeatherDisplay {
             }
         });
 
-        // 窗口大小变化时调整图片显示
+        // 性能优化：减少重排重绘
         window.addEventListener('resize', () => {
-            this.adjustImageSize();
+            this.throttle(this.adjustImageSize, 100)();
         });
+    }
+
+    // 节流函数
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
     }
 
     adjustImageSize() {
         const img = document.querySelector('.weather-image');
         if (img) {
-            // 重置图片尺寸，让CSS自动处理
-            img.style.width = '';
-            img.style.height = '';
-            img.style.maxWidth = '';
-            img.style.maxHeight = '';
+            // 使用requestAnimationFrame优化动画
+            requestAnimationFrame(() => {
+                img.style.transform = '';
+            });
         }
     }
 
@@ -89,10 +108,10 @@ class WeatherDisplay {
         
         if (this.isUploadSectionVisible) {
             uploadSection.style.display = 'none';
-            uploadToggleBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 上传数据';
+            uploadToggleBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
         } else {
             uploadSection.style.display = 'block';
-            uploadToggleBtn.innerHTML = '<i class="fas fa-times"></i> 关闭上传';
+            uploadToggleBtn.innerHTML = '<i class="fas fa-times"></i>';
         }
         
         this.isUploadSectionVisible = !this.isUploadSectionVisible;
@@ -104,12 +123,36 @@ class WeatherDisplay {
             this.images = await response.json();
             this.updateCategoryButtons();
             this.updateCurrentDisplay();
+            
+            // 预加载当前类别的第一张图片
+            this.preloadImages();
         } catch (error) {
             console.error('加载图片失败:', error);
             const statusDiv = document.getElementById('uploadStatus');
             statusDiv.textContent = '加载图片失败，请刷新页面重试';
             statusDiv.className = 'upload-status error';
         }
+    }
+
+    // 图片预加载
+    preloadImages() {
+        const categoryImages = this.images[this.currentCategory];
+        if (!categoryImages || categoryImages.length === 0) return;
+        
+        // 预加载前3张图片
+        for (let i = 0; i < Math.min(3, categoryImages.length); i++) {
+            this.preloadImage(categoryImages[i].url);
+        }
+    }
+
+    preloadImage(url) {
+        // 检查是否已经缓存
+        if (this.imageCache.has(url)) return;
+        
+        // 创建隐藏的Image对象进行预加载
+        const img = new Image();
+        img.src = url;
+        this.imageCache.set(url, img);
     }
 
     updateCategoryButtons() {
@@ -130,10 +173,10 @@ class WeatherDisplay {
             const container = document.getElementById('imageContainer');
             container.innerHTML = `
                 <div class="no-images">
-                    <i class="fas fa-cloud-sun fa-3x"></i>
+                    <i class="fas fa-cloud-sun fa-2x"></i>
                     <p>${this.currentCategory} 暂无数据</p>
-                    <div style="margin-top: 15px; font-size: 14px; color: rgba(255, 255, 255, 0.5);">
-                        点击上方"上传数据"按钮添加图片
+                    <div style="margin-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.5);">
+                        点击"上传"按钮添加图片
                     </div>
                 </div>
             `;
@@ -148,6 +191,9 @@ class WeatherDisplay {
     }
 
     switchCategory(category) {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+        
         // 更新按钮状态
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.remove('active');
@@ -162,15 +208,25 @@ class WeatherDisplay {
         this.currentCategory = category;
         this.currentImageIndex = 0;
         this.updateCurrentDisplay();
+        this.preloadImages(); // 切换类别时预加载
+        
         if (this.isPlaying) {
             this.startAutoPlay();
         }
+        
+        setTimeout(() => {
+            this.isTransitioning = false;
+        }, 300);
     }
 
     showImage(index) {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+        
         const categoryImages = this.images[this.currentCategory];
         if (!categoryImages || categoryImages.length === 0) {
             this.updateCurrentDisplay();
+            this.isTransitioning = false;
             return;
         }
 
@@ -182,43 +238,86 @@ class WeatherDisplay {
         
         const imageData = categoryImages[index];
         
-        // 更新图片显示 - 使用包装器确保正确布局
-        const container = document.getElementById('imageContainer');
-        container.innerHTML = `
-            <div class="image-wrapper">
-                <img src="${imageData.url}" 
-                     alt="${this.currentCategory} - ${imageData.time}"
-                     class="weather-image"
-                     onload="this.style.opacity='1'"
-                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"image-error\"><i class=\"fas fa-exclamation-triangle\"></i><p>图片加载失败</p></div>';">
-                <div class="image-time-overlay">
-                    <i class="far fa-clock"></i> ${imageData.time}
-                </div>
-            </div>
-        `;
-        
-        // 设置图片初始透明度，实现渐变效果
-        const img = container.querySelector('.weather-image');
-        if (img) {
-            img.style.opacity = '0';
-            img.style.transition = 'opacity 0.3s ease';
-            
-            // 添加点击查看大图功能
-            img.addEventListener('click', () => {
-                this.showFullscreenImage(img.src);
-            });
+        // 预加载下一张图片
+        if (index + 1 < categoryImages.length) {
+            this.preloadImage(categoryImages[index + 1].url);
         }
         
-        // 更新顶部时间显示
-        document.getElementById('currentImageTime').innerHTML = `<i class="far fa-clock"></i> ${imageData.time}`;
-        
-        // 更新滑块
-        const slider = document.getElementById('timeSlider');
-        slider.value = index + 1;
-        slider.max = categoryImages.length;
-        
-        // 更新时间标签
-        this.updateTimeLabels(categoryImages.length);
+        // 使用requestAnimationFrame优化动画
+        requestAnimationFrame(() => {
+            // 检查缓存
+            let imgElement;
+            if (this.imageCache.has(imageData.url)) {
+                const cachedImg = this.imageCache.get(imageData.url);
+                imgElement = cachedImg.cloneNode();
+                imgElement.style.opacity = '0';
+            } else {
+                imgElement = document.createElement('img');
+                imgElement.src = imageData.url;
+                imgElement.style.opacity = '0';
+                this.imageCache.set(imageData.url, imgElement.cloneNode());
+            }
+            
+            imgElement.className = 'weather-image performance-optimized';
+            imgElement.alt = `${this.currentCategory} - ${imageData.time}`;
+            
+            // 图片加载完成后的回调
+            const onImageLoad = () => {
+                requestAnimationFrame(() => {
+                    imgElement.style.opacity = '1';
+                    imgElement.style.transition = 'opacity 0.3s ease';
+                    
+                    // 添加点击查看大图功能
+                    imgElement.addEventListener('click', () => {
+                        this.showFullscreenImage(imgElement.src);
+                    });
+                });
+            };
+            
+            // 如果图片已经加载完成
+            if (imgElement.complete) {
+                onImageLoad();
+            } else {
+                imgElement.onload = onImageLoad;
+                imgElement.onerror = () => {
+                    console.error('图片加载失败:', imageData.url);
+                    imgElement.onerror = null;
+                    const wrapper = document.querySelector('.image-wrapper');
+                    if (wrapper) {
+                        wrapper.innerHTML = '<div class="image-error"><i class="fas fa-exclamation-triangle"></i><p>图片加载失败</p></div>';
+                    }
+                };
+            }
+            
+            // 更新容器内容
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = `
+                <div class="image-wrapper performance-optimized">
+                    <div class="image-time-overlay">
+                        <i class="far fa-clock"></i> ${imageData.time}
+                    </div>
+                </div>
+            `;
+            
+            const wrapper = container.querySelector('.image-wrapper');
+            wrapper.insertBefore(imgElement, wrapper.firstChild);
+            
+            // 更新顶部时间显示
+            document.getElementById('currentImageTime').innerHTML = `<i class="far fa-clock"></i> ${imageData.time}`;
+            
+            // 更新滑块
+            const slider = document.getElementById('timeSlider');
+            slider.value = index + 1;
+            slider.max = categoryImages.length;
+            
+            // 更新时间标签
+            this.updateTimeLabels(categoryImages.length);
+            
+            // 重置过渡状态
+            setTimeout(() => {
+                this.isTransitioning = false;
+            }, 300);
+        });
     }
 
     showFullscreenImage(imageSrc) {
@@ -261,14 +360,13 @@ class WeatherDisplay {
             const endTime = '次日00:00';
             
             labelsContainer.innerHTML = `
-                <span><i class="far fa-clock"></i> ${startTime}</span>
+                <span>${startTime}</span>
                 <span>${midTime1}</span>
                 <span>${midTime2}</span>
-                <span><i class="fas fa-clock"></i> ${endTime}</span>
+                <span>${endTime}</span>
             `;
         } else if (totalImages > 0) {
             // 动态计算时间标签
-            const hoursPerImage = 24 / totalImages;
             const labels = [];
             
             // 显示4个等间距的时间点
@@ -279,9 +377,9 @@ class WeatherDisplay {
                 
                 let label = '';
                 if (i === 0) {
-                    label = `<i class="far fa-clock"></i> 01:00`;
+                    label = '01:00';
                 } else if (i === 3) {
-                    label = `<i class="fas fa-clock"></i> 次日00:00`;
+                    label = '次日00:00';
                 } else {
                     const hourStr = time.getHours().toString().padStart(2, '0');
                     label = `${hourStr}:00`;
@@ -293,15 +391,17 @@ class WeatherDisplay {
             labelsContainer.innerHTML = labels.join('');
         } else {
             labelsContainer.innerHTML = `
-                <span><i class="far fa-clock"></i> 01:00</span>
+                <span>01:00</span>
                 <span>12:00</span>
                 <span>23:00</span>
-                <span><i class="fas fa-clock"></i> 次日00:00</span>
+                <span>次日00:00</span>
             `;
         }
     }
 
     nextImage() {
+        if (this.isTransitioning) return;
+        
         const categoryImages = this.images[this.currentCategory];
         if (!categoryImages || categoryImages.length === 0) return;
 
@@ -336,10 +436,10 @@ class WeatherDisplay {
         const icon = playPauseBtn.querySelector('i');
         
         if (this.isPlaying) {
-            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
             this.startAutoPlay();
         } else {
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
             this.stopAutoPlay();
         }
     }
@@ -413,13 +513,15 @@ class WeatherDisplay {
                     // 重置表单（保留类别选择）
                     fileInput.value = '';
                     
-                    // 3秒后清除成功消息
+                    // 3秒后清除成功消息并隐藏上传区域
                     setTimeout(() => {
                         statusDiv.textContent = '';
                         statusDiv.className = 'upload-status';
                         
                         // 自动隐藏上传区域
-                        this.toggleUploadSection();
+                        if (this.isUploadSectionVisible) {
+                            this.toggleUploadSection();
+                        }
                     }, 3000);
                 }, 1000);
                 
