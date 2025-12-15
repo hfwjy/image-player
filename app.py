@@ -3,8 +3,6 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import shutil
-from PIL import Image
-import io
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -43,7 +41,8 @@ def get_images():
                 images.append({
                     'url': f'/uploads/{category}/{filename}',
                     'time': image_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'hour': i + 1
+                    'hour': i + 1,
+                    'filename': filename
                 })
             images_data[category] = images
         else:
@@ -86,34 +85,13 @@ def upload_images():
         
         for i, file in enumerate(sorted_files):
             if file and file.filename != '' and allowed_file(file.filename):
-                # 生成新的文件名，保持扩展名
-                extension = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
-                new_filename = f"{i+1:03d}.{extension}"
+                # 使用原始文件名，但要确保顺序
+                original_name = file.filename
+                # 为了保持顺序，我们可以添加前缀
+                new_filename = f"{i+1:03d}_{original_name}"
                 filepath = os.path.join(target_folder, new_filename)
-                
-                # 压缩图片以减少大小
-                try:
-                    img = Image.open(file.stream)
-                    
-                    # 将图片转换为RGB模式（如果是RGBA）
-                    if img.mode in ('RGBA', 'LA', 'P'):
-                        img = img.convert('RGB')
-                    
-                    # 调整图片大小（最大宽度1920像素）
-                    max_width = 1920
-                    if img.width > max_width:
-                        ratio = max_width / img.width
-                        new_height = int(img.height * ratio)
-                        img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
-                    
-                    # 保存压缩后的图片
-                    img.save(filepath, 'JPEG', quality=85, optimize=True)
-                    uploaded_files.append(new_filename)
-                except Exception as e:
-                    print(f"图片压缩失败: {e}")
-                    # 如果压缩失败，保存原始文件
-                    file.save(filepath)
-                    uploaded_files.append(new_filename)
+                file.save(filepath)
+                uploaded_files.append(new_filename)
             else:
                 return jsonify({'error': f'文件 {file.filename if file else "未知"} 格式不支持'}), 400
         

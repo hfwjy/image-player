@@ -159,22 +159,29 @@ body {
     white-space: nowrap;
 }
 
-/* 图片容器 - 缩小并优化 */
-.image-container {
+/* 图片显示区域 - 关键修改 */
+.image-display-area {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
-    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    min-height: 400px; /* 设置最小高度 */
+    max-height: 500px; /* 设置最大高度 */
+    overflow: hidden; /* 隐藏超出部分 */
+}
+
+.image-container {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 45vh;  /* 缩小高度 */
-    max-height: 90vh;  /* 限制最大高度 */
-    padding: 10px;
-    overflow: hidden;  /* 防止内容溢出 */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    will-change: transform;  /* 硬件加速优化 */
-    transform: translateZ(0);  /* 强制GPU加速 */
+    overflow: auto; /* 允许滚动查看完整图片 */
+    padding: 5px;
+    position: relative;
 }
 
 .no-images {
@@ -194,52 +201,68 @@ body {
     font-size: 14px;
 }
 
-/* 图片样式 - 优化显示和性能 */
+/* 图片样式 - 显示原始尺寸，不进行缩放 */
 .weather-image {
     display: block;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;  /* 保持比例完整显示 */
+    max-width: none; /* 移除最大宽度限制 */
+    max-height: none; /* 移除最大高度限制 */
+    width: auto; /* 保持原始宽度 */
+    height: auto; /* 保持原始高度 */
+    object-fit: none; /* 不应用object-fit */
     border-radius: 4px;
-    image-rendering: -webkit-optimize-contrast;  /* 图片渲染优化 */
-    image-rendering: crisp-edges;
-    backface-visibility: hidden;  /* 避免重绘 */
-    transform: translateZ(0);  /* GPU加速 */
-    transition: opacity 0.3s ease;  /* 淡入效果 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.3s ease;
+    cursor: pointer; /* 添加指针光标 */
 }
 
-/* 图片时间覆盖层 - 左下角 */
-.image-time-overlay {
+.weather-image:hover {
+    opacity: 0.95;
+}
+
+/* 图片时间信息区域 */
+.image-time-info {
     position: absolute;
-    bottom: 15px;
-    left: 15px;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+/* 图片时间覆盖层 - 左下角固定位置 */
+.image-time-overlay {
     background: rgba(0, 0, 0, 0.7);
-    padding: 6px 12px;
+    padding: 8px 15px;
     border-radius: 15px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: white;
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     gap: 6px;
     white-space: nowrap;
+    pointer-events: none; /* 防止干扰图片点击 */
 }
 
-/* 图片加载容器 */
-.image-wrapper {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;  /* 确保图片不超出容器 */
+/* 滚动条样式 */
+.image-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.image-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.image-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.image-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .progress-container {
@@ -440,17 +463,17 @@ body {
         justify-content: center;
     }
     
-    .image-container {
-        min-height: 40vh;
-        max-height: 40vh;
+    .image-display-area {
+        min-height: 350px;
+        max-height: 400px;
         padding: 8px;
     }
     
     .image-time-overlay {
-        bottom: 10px;
-        left: 10px;
-        font-size: 11px;
-        padding: 4px 8px;
+        font-size: 12px;
+        padding: 6px 12px;
+        bottom: 15px;
+        left: 15px;
     }
     
     #currentImageTime {
@@ -489,16 +512,16 @@ body {
         padding: 4px 8px;
     }
     
-    .image-container {
-        min-height: 35vh;
-        max-height: 35vh;
+    .image-display-area {
+        min-height: 300px;
+        max-height: 350px;
     }
     
     .image-time-overlay {
-        bottom: 8px;
-        left: 8px;
-        font-size: 10px;
-        padding: 3px 6px;
+        font-size: 11px;
+        padding: 5px 10px;
+        bottom: 10px;
+        left: 10px;
     }
     
     #currentImageTime {
