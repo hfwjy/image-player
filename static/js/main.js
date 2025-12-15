@@ -96,8 +96,8 @@ class WeatherDisplay {
     adjustImageSize() {
         const img = document.querySelector('.weather-image');
         if (img) {
-            // 保持原始尺寸，不进行缩放
-            img.style.transform = '';
+            // 重置图片尺寸，让CSS自动处理自适应
+            img.style.transform = 'translate(-50%, -50%)';
         }
     }
 
