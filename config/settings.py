@@ -27,6 +27,16 @@ DISPLAY_DURATION = 3000
 
 # ===== 文件类型配置 =====
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
+ALLOWED_MIMETYPES = {
+    "image/jpeg", "image/jpg", "image/png", 
+    "image/gif", "image/webp", "image/bmp"
+}
+
+# ===== 批量上传配置 =====
+# 最大上传文件大小（50MB）
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+# 批量上传最大文件数
+MAX_BATCH_FILES = 50
 
 def init_storage():
     """初始化存储目录结构"""
