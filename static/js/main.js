@@ -6,6 +6,7 @@ class WeatherDisplay {
         this.autoPlayInterval = null;
         this.isPlaying = true;
         this.playbackSpeed = 2000; // 默认1倍速
+        this.isUploadSectionVisible = false;
         
         this.init();
     }
@@ -21,7 +22,7 @@ class WeatherDisplay {
         // 类别按钮点击事件
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.switchCategory(e.target.dataset.category);
+                this.switchCategory(e.target.closest('.category-btn').dataset.category);
             });
         });
 
@@ -41,6 +42,11 @@ class WeatherDisplay {
         // 播放/暂停按钮事件
         document.getElementById('playPauseBtn').addEventListener('click', () => {
             this.togglePlayPause();
+        });
+
+        // 上传按钮显示/隐藏事件
+        document.getElementById('uploadToggleBtn').addEventListener('click', () => {
+            this.toggleUploadSection();
         });
 
         // 上传表单提交事件
@@ -77,6 +83,21 @@ class WeatherDisplay {
         }
     }
 
+    toggleUploadSection() {
+        const uploadSection = document.getElementById('uploadSection');
+        const uploadToggleBtn = document.getElementById('uploadToggleBtn');
+        
+        if (this.isUploadSectionVisible) {
+            uploadSection.style.display = 'none';
+            uploadToggleBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 上传数据';
+        } else {
+            uploadSection.style.display = 'block';
+            uploadToggleBtn.innerHTML = '<i class="fas fa-times"></i> 关闭上传';
+        }
+        
+        this.isUploadSectionVisible = !this.isUploadSectionVisible;
+    }
+
     async loadImages() {
         try {
             const response = await fetch('/get_images');
@@ -109,15 +130,20 @@ class WeatherDisplay {
             const container = document.getElementById('imageContainer');
             container.innerHTML = `
                 <div class="no-images">
-                    <div>${this.currentCategory} 暂无数据</div>
-                    <div style="margin-top: 15px; font-size: 14px;">请先上传该类别图片</div>
+                    <i class="fas fa-cloud-sun fa-3x"></i>
+                    <p>${this.currentCategory} 暂无数据</p>
+                    <div style="margin-top: 15px; font-size: 14px; color: rgba(255, 255, 255, 0.5);">
+                        点击上方"上传数据"按钮添加图片
+                    </div>
                 </div>
             `;
             
             // 更新时间显示为默认值
             const defaultTime = new Date(2023, 0, 1, 1, 0, 0);
-            document.getElementById('currentImageTime').textContent = defaultTime.toLocaleString('zh-CN');
-            document.getElementById('imageCounter').textContent = '第 0/0 张';
+            document.getElementById('currentImageTime').innerHTML = `<i class="far fa-clock"></i> ${defaultTime.toLocaleString('zh-CN')}`;
+            
+            // 重置滑块
+            document.getElementById('timeSlider').value = 1;
         }
     }
 
@@ -164,8 +190,10 @@ class WeatherDisplay {
                      alt="${this.currentCategory} - ${imageData.time}"
                      class="weather-image"
                      onload="this.style.opacity='1'"
-                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'image-error\'>图片加载失败</div>';">
-                <div class="image-time-overlay">${imageData.time}</div>
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"image-error\"><i class=\"fas fa-exclamation-triangle\"></i><p>图片加载失败</p></div>';">
+                <div class="image-time-overlay">
+                    <i class="far fa-clock"></i> ${imageData.time}
+                </div>
             </div>
         `;
         
@@ -174,11 +202,15 @@ class WeatherDisplay {
         if (img) {
             img.style.opacity = '0';
             img.style.transition = 'opacity 0.3s ease';
+            
+            // 添加点击查看大图功能
+            img.addEventListener('click', () => {
+                this.showFullscreenImage(img.src);
+            });
         }
         
         // 更新顶部时间显示
-        document.getElementById('currentImageTime').textContent = imageData.time;
-        document.getElementById('imageCounter').textContent = `第 ${index + 1}/${categoryImages.length} 张`;
+        document.getElementById('currentImageTime').innerHTML = `<i class="far fa-clock"></i> ${imageData.time}`;
         
         // 更新滑块
         const slider = document.getElementById('timeSlider');
@@ -187,6 +219,36 @@ class WeatherDisplay {
         
         // 更新时间标签
         this.updateTimeLabels(categoryImages.length);
+    }
+
+    showFullscreenImage(imageSrc) {
+        const overlay = document.createElement('div');
+        overlay.className = 'fullscreen-overlay';
+        overlay.innerHTML = `
+            <img src="${imageSrc}" class="fullscreen-image">
+            <button class="close-fullscreen">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // 点击任意位置关闭全屏
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay || e.target.closest('.close-fullscreen')) {
+                document.body.removeChild(overlay);
+            }
+        });
+        
+        // ESC键关闭全屏
+        const closeOnEscape = (e) => {
+            if (e.key === 'Escape') {
+                document.body.removeChild(overlay);
+                document.removeEventListener('keydown', closeOnEscape);
+            }
+        };
+        
+        document.addEventListener('keydown', closeOnEscape);
     }
 
     updateTimeLabels(totalImages) {
@@ -199,10 +261,10 @@ class WeatherDisplay {
             const endTime = '次日00:00';
             
             labelsContainer.innerHTML = `
-                <span>${startTime}</span>
+                <span><i class="far fa-clock"></i> ${startTime}</span>
                 <span>${midTime1}</span>
                 <span>${midTime2}</span>
-                <span>${endTime}</span>
+                <span><i class="fas fa-clock"></i> ${endTime}</span>
             `;
         } else if (totalImages > 0) {
             // 动态计算时间标签
@@ -217,9 +279,9 @@ class WeatherDisplay {
                 
                 let label = '';
                 if (i === 0) {
-                    label = '01:00';
+                    label = `<i class="far fa-clock"></i> 01:00`;
                 } else if (i === 3) {
-                    label = '次日00:00';
+                    label = `<i class="fas fa-clock"></i> 次日00:00`;
                 } else {
                     const hourStr = time.getHours().toString().padStart(2, '0');
                     label = `${hourStr}:00`;
@@ -231,10 +293,10 @@ class WeatherDisplay {
             labelsContainer.innerHTML = labels.join('');
         } else {
             labelsContainer.innerHTML = `
-                <span>01:00</span>
+                <span><i class="far fa-clock"></i> 01:00</span>
                 <span>12:00</span>
                 <span>23:00</span>
-                <span>次日00:00</span>
+                <span><i class="fas fa-clock"></i> 次日00:00</span>
             `;
         }
     }
@@ -271,12 +333,13 @@ class WeatherDisplay {
     togglePlayPause() {
         this.isPlaying = !this.isPlaying;
         const playPauseBtn = document.getElementById('playPauseBtn');
+        const icon = playPauseBtn.querySelector('i');
         
         if (this.isPlaying) {
-            playPauseBtn.textContent = '暂停';
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
             this.startAutoPlay();
         } else {
-            playPauseBtn.textContent = '播放';
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
             this.stopAutoPlay();
         }
     }
@@ -337,7 +400,7 @@ class WeatherDisplay {
             const result = await response.json();
 
             if (result.success) {
-                statusDiv.textContent = result.message;
+                statusDiv.textContent = `✅ ${result.message}`;
                 statusDiv.className = 'upload-status success';
                 
                 // 延迟一下再重新加载图片，给服务器处理时间
@@ -354,11 +417,14 @@ class WeatherDisplay {
                     setTimeout(() => {
                         statusDiv.textContent = '';
                         statusDiv.className = 'upload-status';
+                        
+                        // 自动隐藏上传区域
+                        this.toggleUploadSection();
                     }, 3000);
                 }, 1000);
                 
             } else {
-                statusDiv.textContent = result.error || '上传失败';
+                statusDiv.textContent = `❌ ${result.error || '上传失败'}`;
                 statusDiv.className = 'upload-status error';
                 
                 // 5秒后清除错误消息
@@ -369,7 +435,7 @@ class WeatherDisplay {
             }
         } catch (error) {
             console.error('上传错误:', error);
-            statusDiv.textContent = `上传失败: ${error.message}`;
+            statusDiv.textContent = `❌ 上传失败: ${error.message}`;
             statusDiv.className = 'upload-status error';
             
             // 5秒后清除错误消息

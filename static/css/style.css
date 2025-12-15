@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Microsoft YaHei', Arial, sans-serif;
-    background: linear-gradient(135deg, #1a2980, #26d0ce);
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
     color: #fff;
     min-height: 100vh;
     overflow-x: hidden;
@@ -17,47 +17,53 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 10px 15px;
 }
 
 .header {
     text-align: center;
     margin-bottom: 15px;
     padding: 15px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .category-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .category-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
-    font-weight: bold;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.15);
     color: white;
-    border-radius: 25px;
+    border-radius: 30px;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .category-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .category-btn.active {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 136, 255, 0.3));
     border-color: #00ff88;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
 }
 
 .main-content {
@@ -71,92 +77,121 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px 15px;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 12px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .playback-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .playback-controls span {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .speed-select {
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 8px 12px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 14px;
     cursor: pointer;
-    backdrop-filter: blur(5px);
-}
-
-.play-btn {
-    padding: 5px 15px;
-    background: linear-gradient(135deg, #00ff88, #0088ff);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+    backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
 
-.play-btn:hover {
+.speed-select:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.play-btn, .upload-toggle-btn {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #00ff88, #0088ff);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.play-btn:hover, .upload-toggle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+}
+
+.upload-toggle-btn {
+    background: linear-gradient(135deg, #ff7b00, #ff5500);
+    box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
+}
+
+.upload-toggle-btn:hover {
+    box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
 }
 
 .time-display {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
+    align-items: center;
+    gap: 10px;
 }
 
 #currentImageTime {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
     color: #00ff88;
     text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#imageCounter {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* 图片容器修改 - 关键部分 */
+/* 图片容器 - 关键修改 */
 .image-container {
     flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    overflow: hidden;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 60vh;
-    padding: 15px;
+    min-height: 65vh;
+    padding: 20px;
+    overflow: visible;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .no-images {
-    font-size: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.7);
     text-align: center;
     padding: 40px;
 }
 
-/* 图片样式修改 - 关键部分 */
+.no-images i {
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* 图片样式 - 关键修改 */
 .weather-image {
     display: block;
     max-width: 100%;
@@ -164,26 +199,34 @@ body {
     width: auto;
     height: auto;
     object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.5s ease;
+    transition: transform 0.3s ease;
 }
 
-/* 图片时间覆盖层 */
+.weather-image:hover {
+    transform: scale(1.01);
+}
+
+/* 图片时间覆盖层 - 修改为左下角 */
 .image-time-overlay {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 14px;
+    bottom: 25px;
+    left: 25px;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
     color: white;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 10;
-    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* 图片加载容器 */
@@ -202,77 +245,111 @@ body {
 }
 
 .progress-container {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 18px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .time-slider {
     width: 100%;
-    height: 6px;
+    height: 8px;
     -webkit-appearance: none;
     appearance: none;
     background: linear-gradient(90deg, #00ff88, #0088ff);
-    border-radius: 3px;
+    border-radius: 4px;
     outline: none;
+    margin-bottom: 10px;
 }
 
 .time-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
     border: 3px solid #00ff88;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    transition: all 0.2s ease;
+}
+
+.time-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
 }
 
 .time-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
     border: 3px solid #00ff88;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .time-labels {
     display: flex;
     justify-content: space-between;
     margin-top: 8px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.time-labels span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .upload-section {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 25px;
+    border-radius: 12px;
     margin-top: 15px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .upload-controls {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 #categorySelect,
 #fileInput {
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.1);
     color: white;
     font-size: 14px;
-    backdrop-filter: blur(5px);
-    min-width: 120px;
+    backdrop-filter: blur(10px);
+    min-width: 150px;
+    transition: all 0.3s ease;
+}
+
+#categorySelect:hover, #fileInput:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 #fileInput {
@@ -280,118 +357,62 @@ body {
     max-width: 300px;
 }
 
+#fileInput::-webkit-file-upload-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.3s ease;
+}
+
+#fileInput::-webkit-file-upload-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .upload-btn {
-    padding: 8px 20px;
-    background: linear-gradient(135deg, #00ff88, #0088ff);
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #ff7b00, #ff5500);
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 25px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 80px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
 }
 
 .upload-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
 }
 
 .upload-status {
-    margin-top: 8px;
-    padding: 8px;
-    border-radius: 5px;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
     text-align: center;
     min-height: 20px;
-    font-size: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
 
 .upload-status.success {
-    background: rgba(0, 255, 136, 0.2);
+    background: rgba(0, 255, 136, 0.15);
     color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .upload-status.error {
-    background: rgba(255, 0, 0, 0.2);
+    background: rgba(255, 68, 68, 0.15);
     color: #ff4444;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .category-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .category-btn {
-        width: 100%;
-        max-width: 250px;
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-    
-    .control-bar {
-        flex-direction: column;
-        gap: 10px;
-        align-items: stretch;
-    }
-    
-    .playback-controls,
-    .time-display {
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .time-display {
-        align-items: center;
-    }
-    
-    .image-container {
-        min-height: 50vh;
-        padding: 10px;
-    }
-    
-    .weather-image {
-        max-width: 100%;
-        max-height: 100%;
-    }
-    
-    .upload-controls {
-        flex-direction: column;
-    }
-    
-    #categorySelect,
-    #fileInput {
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    .upload-btn {
-        width: 100%;
-    }
-    
-    .image-time-overlay {
-        font-size: 12px;
-        padding: 6px 12px;
-        bottom: 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .playback-controls {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .speed-select {
-        flex: 1;
-    }
-    
-    .image-container {
-        min-height: 45vh;
-    }
+    border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
 /* 图片加载动画 */
@@ -401,7 +422,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* 图片错误状态 */
@@ -409,22 +430,7 @@ body {
     text-align: center;
     color: #ff4444;
     padding: 40px;
-    font-size: 16px;
-}
-
-/* 文件输入样式 */
-#fileInput::-webkit-file-upload-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-#fileInput::-webkit-file-upload-button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    font-size: 18px;
 }
 
 /* 选择框样式增强 */
@@ -442,11 +448,152 @@ body {
 .category-btn:disabled:hover {
     transform: none;
     background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
 }
 
 /* 上传状态样式增强 */
 .upload-status.warning {
-    background: rgba(255, 204, 0, 0.2);
+    background: rgba(255, 204, 0, 0.15);
     color: #ffcc00;
     border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+    .image-container {
+        min-height: 60vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .category-btn {
+        width: 100%;
+        max-width: 280px;
+        padding: 10px 20px;
+        font-size: 15px;
+    }
+    
+    .control-bar {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .playback-controls {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .time-display {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .image-container {
+        min-height: 55vh;
+        padding: 15px;
+    }
+    
+    .image-time-overlay {
+        bottom: 15px;
+        left: 15px;
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+    
+    .upload-controls {
+        flex-direction: column;
+    }
+    
+    #categorySelect,
+    #fileInput {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .upload-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .playback-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .speed-select {
+        width: 100%;
+    }
+    
+    .play-btn, .upload-toggle-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .image-container {
+        min-height: 50vh;
+        padding: 10px;
+    }
+    
+    .image-time-overlay {
+        bottom: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    #currentImageTime {
+        font-size: 14px;
+    }
+}
+
+/* 全屏查看图片 */
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.fullscreen-image {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+}
+
+.close-fullscreen {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.close-fullscreen:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
 }
