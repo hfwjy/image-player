@@ -1,695 +1,387 @@
-/**
- * 图片轮播系统 - 主JavaScript文件
- * 时间从2023年1月1日01:00开始
- */
-class FixedTimeImageCarousel {
+class WeatherDisplay {
     constructor() {
-        // 基础配置
-        this.groups = [];
-        this.currentGroup = '';
-        this.images = [];
-        this.currentIndex = 0;
-        this.totalImages = 48;
-        this.duration = 3000;
-        
-        // 播放控制
-        this.timer = null;
+        this.currentCategory = '台海温度';
+        this.currentImageIndex = 0;
+        this.images = {};
+        this.autoPlayInterval = null;
         this.isPlaying = true;
-        this.speedMultiplier = 1;
-        this.isDragging = false;
+        this.playbackSpeed = 2000; // 默认1倍速
         
-        // 缓存管理
-        this.preloadedImages = new Map();
-        this.isLoading = false;
-        
-        // 时间配置（固定为2023-01-01 01:00:00）
-        this.startDate = new Date(2023, 0, 1, 1, 0, 0); // 月份从0开始
-        
-        // 状态统计
-        this.viewCount = 0;
-        
-        // 初始化
         this.init();
     }
-    
-    init() {
-        console.log('🚀 初始化固定时间图片轮播系统...');
-        console.log('📅 时间起点:', this.startDate.toLocaleString('zh-CN'));
-        
-        this.initElements();
-        this.initEvents();
-        this.loadConfig();
-        this.initClock();
-        this.initHideCursor();
-        this.initViewCounter();
+
+    async init() {
+        this.bindEvents();
+        await this.loadImages();
+        this.startAutoPlay();
+        this.updatePlaybackSpeed();
     }
-    
-    initElements() {
-        // 图片显示
-        this.imageElement = document.getElementById('current-image');
-        
-        // 时间显示
-        this.systemClock = document.getElementById('system-clock');
-        this.currentRange = document.getElementById('current-range');
-        this.endRange = document.getElementById('end-range');
-        this.displayDate = document.getElementById('display-date');
-        this.displayTime = document.getElementById('display-time');
-        
-        // 信息显示
-        this.currentGroupElement = document.getElementById('current-group');
-        this.currentIndexElement = document.getElementById('current-index');
-        this.totalImagesElement = document.getElementById('total-images');
-        this.statusText = document.getElementById('status-text');
-        
-        // 时间轴元素
-        this.progressFill = document.getElementById('progress-fill');
-        this.progressHandle = document.getElementById('progress-handle');
-        this.handleTime = document.getElementById('handle-time');
-        this.currentMarker = document.getElementById('current-marker');
-        this.progressTrack = document.getElementById('progress-track');
-        
-        // 控制元素
-        this.playPauseBtn = document.getElementById('play-pause-btn');
-        this.playIcon = document.getElementById('play-icon');
-        this.prevBtn = document.getElementById('prev-btn');
-        this.nextBtn = document.getElementById('next-btn');
-        this.jumpStartBtn = document.getElementById('jump-start-btn');
-        this.speedSlider = document.getElementById('speed-slider');
-        this.speedDisplay = document.getElementById('speed-display');
-        
-        // 组选择按钮
-        this.groupButtons = document.querySelectorAll('.group-btn');
-        
-        // 快速跳转按钮
-        this.navButtons = document.querySelectorAll('.nav-btn');
-        
-        // 上传相关元素
-        this.uploadPanel = document.querySelector('.upload-panel');
-        this.uploadToggle = document.getElementById('upload-toggle');
-        this.closeUpload = document.getElementById('close-upload');
-        this.uploadSubmit = document.getElementById('upload-submit');
-        this.uploadResult = document.getElementById('upload-result');
-        
-        // 更新总图片数显示
-        this.totalImagesElement.textContent = this.totalImages.toString().padStart(2, '0');
-        
-        // 更新初始时间范围显示
-        this.updateTimeRangeDisplay();
-    }
-    
-    initEvents() {
-        // 播放控制
-        this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
-        this.prevBtn.addEventListener('click', () => this.prevHour());
-        this.nextBtn.addEventListener('click', () => this.nextHour());
-        this.jumpStartBtn.addEventListener('click', () => this.jumpToHour(0));
-        
-        // 速度控制
-        this.speedSlider.addEventListener('input', (e) => {
-            this.speedMultiplier = parseFloat(e.target.value);
-            this.speedDisplay.textContent = `${this.speedMultiplier}x`;
-            
-            if (this.isPlaying) {
-                this.startAutoPlay();
-            }
-            
-            this.updateStatus(`播放速度: ${this.speedMultiplier}倍`);
-        });
-        
-        // 组切换
-        this.groupButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const group = btn.dataset.group;
-                if (group && group !== this.currentGroup) {
-                    this.selectGroup(group);
-                }
+
+    bindEvents() {
+        // 类别按钮点击事件
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchCategory(e.target.dataset.category);
             });
         });
-        
-        // 快速跳转
-        this.navButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const hour = parseInt(btn.dataset.hour);
-                if (hour >= 1 && hour <= 48) {
-                    this.jumpToHour(hour - 1);
-                }
-            });
+
+        // 时间滑块事件
+        const slider = document.getElementById('timeSlider');
+        slider.addEventListener('input', (e) => {
+            this.stopAutoPlay();
+            this.showImage(parseInt(e.target.value) - 1);
         });
-        
-        // 时间轴交互
-        this.progressTrack.addEventListener('click', (e) => this.handleTimelineClick(e));
-        this.progressHandle.addEventListener('mousedown', (e) => this.startDrag(e));
-        
-        // 上传功能
-        this.uploadToggle.addEventListener('click', () => this.toggleUploadPanel());
-        this.closeUpload.addEventListener('click', () => this.toggleUploadPanel());
-        this.uploadSubmit.addEventListener('click', () => this.uploadImage());
-        
-        // 键盘快捷键
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            
-            switch(e.key) {
-                case ' ':
-                    e.preventDefault();
-                    this.togglePlayPause();
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    this.prevHour();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    this.nextHour();
-                    break;
-                case 'Home':
-                    e.preventDefault();
-                    this.jumpToHour(0);
-                    break;
-                case 'End':
-                    e.preventDefault();
-                    this.jumpToHour(this.totalImages - 1);
-                    break;
-                case 'u':
-                case 'U':
-                    e.preventDefault();
-                    this.toggleUploadPanel();
-                    break;
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                    const index = parseInt(e.key) - 1;
-                    if (index < this.groups.length) {
-                        this.selectGroup(this.groups[index]);
-                    }
-                    break;
-            }
+
+        // 播放速度选择事件
+        document.getElementById('playbackSpeed').addEventListener('change', (e) => {
+            this.playbackSpeed = parseInt(e.target.value);
+            this.updatePlaybackSpeed();
         });
-        
-        // 图片加载事件
-        this.imageElement.addEventListener('load', () => {
-            this.imageElement.style.opacity = '1';
+
+        // 播放/暂停按钮事件
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            this.togglePlayPause();
         });
-        
-        this.imageElement.addEventListener('error', () => {
-            console.warn('图片加载失败');
-            this.imageElement.alt = '图片加载失败';
-            this.updateStatus('图片加载失败', 'warning');
+
+        // 上传表单提交事件
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.uploadImages();
         });
-        
-        // 全局鼠标控制
-        this.initMouseControl();
-    }
-    
-    initClock() {
-        // 更新系统时钟
-        const updateClock = () => {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            
-            this.systemClock.textContent = `${hours}:${minutes}:${seconds}`;
-        };
-        
-        updateClock();
-        setInterval(updateClock, 1000);
-    }
-    
-    initHideCursor() {
-        let mouseTimer = null;
-        
-        const hideCursor = () => {
-            document.body.classList.add('hide-cursor');
-        };
-        
-        const showCursor = () => {
-            document.body.classList.remove('hide-cursor');
-            clearTimeout(mouseTimer);
-            mouseTimer = setTimeout(hideCursor, 3000);
-        };
-        
-        document.addEventListener('mousemove', showCursor);
-        document.addEventListener('mousedown', showCursor);
-        document.addEventListener('wheel', showCursor);
-        
-        hideCursor();
-    }
-    
-    initMouseControl() {
-        let hideTimer = null;
-        
-        const showControls = () => {
-            document.querySelector('.top-bar').classList.remove('hidden');
-            document.querySelector('.timeline-section').classList.remove('hidden');
-            document.querySelector('.status-bar').classList.remove('hidden');
-            
-            clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => {
-                document.querySelector('.top-bar').classList.add('hidden');
-                document.querySelector('.timeline-section').classList.add('hidden');
-                document.querySelector('.status-bar').classList.add('hidden');
-            }, 4000);
-        };
-        
-        document.addEventListener('mousemove', showControls);
-        document.addEventListener('mousedown', showControls);
-        document.addEventListener('wheel', showControls);
-        
-        showControls();
-    }
-    
-    initViewCounter() {
-        this.viewCount = parseInt(localStorage.getItem('viewCount')) || 0;
-        this.viewCount++;
-        localStorage.setItem('viewCount', this.viewCount.toString());
-    }
-    
-    async loadConfig() {
-        try {
-            const response = await fetch('/api/config');
-            const config = await response.json();
-            
-            this.groups = config.groups;
-            this.duration = config.duration_per_image;
-            this.totalImages = config.images_per_group;
-            
-            console.log('✅ 配置加载成功:', config);
-            
-            // 默认选择第一组
-            if (this.groups.length > 0) {
-                await this.selectGroup(this.groups[0]);
-            }
-            
-            this.updateStatus('系统就绪');
-        } catch (error) {
-            console.error('❌ 配置加载失败:', error);
-            
-            // 使用默认配置
-            this.groups = ['台海温度', '台海风速', '西藏温度', '西藏风速'];
-            this.totalImages = 48;
-            
-            await this.selectGroup(this.groups[0]);
-            this.updateStatus('使用本地配置', 'warning');
-        }
-    }
-    
-    async selectGroup(groupName) {
-        if (this.isLoading) return;
-        
-        this.isLoading = true;
-        this.currentGroup = groupName;
-        this.currentIndex = 0;
-        this.preloadedImages.clear();
-        
-        this.updateStatus(`正在加载 ${groupName}...`);
-        
-        // 更新UI
-        this.updateGroupButtons(groupName);
-        
-        try {
-            const response = await fetch(`/api/group/${groupName}`);
-            const data = await response.json();
-            
-            if (!data.images || data.images.length === 0) {
-                console.warn(`组 ${groupName} 没有图片`);
-                this.updateStatus(`${groupName} 暂无数据`, 'warning');
-                this.isLoading = false;
-                return;
-            }
-            
-            this.images = data.images;
-            
-            // 显示第一张图片
-            await this.showImage(0);
-            
-            // 开始自动播放
-            if (this.isPlaying) {
-                this.startAutoPlay();
-            }
-            
-            this.updateStatus(`${groupName} 加载完成`);
-            this.isLoading = false;
-        } catch (error) {
-            console.error(`加载组 ${groupName} 失败:`, error);
-            this.updateStatus('加载失败', 'error');
-            this.isLoading = false;
-        }
-    }
-    
-    updateGroupButtons(activeGroup) {
-        this.groupButtons.forEach(btn => {
-            if (btn.dataset.group === activeGroup) {
-                btn.classList.add('active');
+
+        // 文件选择变化时显示文件名
+        document.getElementById('fileInput').addEventListener('change', function() {
+            const statusDiv = document.getElementById('uploadStatus');
+            if (this.files.length > 0) {
+                statusDiv.textContent = `已选择 ${this.files.length} 个文件`;
+                statusDiv.className = 'upload-status';
             } else {
-                btn.classList.remove('active');
+                statusDiv.textContent = '';
             }
         });
+
+        // 窗口大小变化时调整图片显示
+        window.addEventListener('resize', () => {
+            this.adjustImageSize();
+        });
     }
-    
-    async showImage(index) {
-        if (index < 0 || index >= this.totalImages) return;
-        
-        this.currentIndex = index;
-        
-        // 更新计数器
-        this.currentIndexElement.textContent = (index + 1).toString().padStart(2, '0');
-        
-        // 更新时间显示
-        this.updateTimeDisplay();
-        
-        // 更新进度显示
-        this.updateProgressDisplay();
-        
-        // 获取图片URL
-        const image = this.images[index];
-        if (!image) {
-            console.warn(`图片索引 ${index} 不存在`);
-            return;
-        }
-        
-        // 处理占位符图片
-        if (image.placeholder) {
-            console.log(`图片 ${index + 1} 为占位符`);
-            this.imageElement.src = '';
-            this.imageElement.alt = '暂无图片数据';
-            this.imageElement.style.opacity = '1';
-            return;
-        }
-        
-        const imageUrl = `/images/${image.path}`;
-        
-        // 淡出当前图片
-        this.imageElement.style.opacity = '0';
-        
-        // 加载新图片
-        setTimeout(() => {
-            this.imageElement.src = imageUrl;
-            this.imageElement.alt = `${this.currentGroup} - 第${index + 1}小时`;
-        }, 300);
-        
-        // 预加载下一张图片
-        this.preloadNextImage();
-    }
-    
-    updateTimeDisplay() {
-        // 计算当前时间（从固定起始时间开始）
-        const currentDate = new Date(this.startDate);
-        currentDate.setHours(currentDate.getHours() + this.currentIndex);
-        
-        // 格式化日期和时间
-        const year = currentDate.getFullYear();
-        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-        const day = currentDate.getDate().toString().padStart(2, '0');
-        const hours = currentDate.getHours().toString().padStart(2, '0');
-        const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-        
-        // 更新显示
-        this.displayDate.textContent = `${year}/${month}/${day}`;
-        this.displayTime.textContent = `${hours}:${minutes}`;
-        this.handleTime.textContent = `${hours}:${minutes}`;
-    }
-    
-    updateTimeRangeDisplay() {
-        // 计算起始时间
-        const startDate = new Date(this.startDate);
-        
-        // 计算结束时间（48小时后）
-        const endDate = new Date(this.startDate);
-        endDate.setHours(endDate.getHours() + 48);
-        
-        // 格式化日期和时间
-        const formatDateTime = (date) => {
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${year}/${month}/${day} ${hours}:${minutes}`;
-        };
-        
-        // 更新显示
-        this.currentRange.textContent = formatDateTime(startDate);
-        this.endRange.textContent = formatDateTime(endDate);
-    }
-    
-    updateProgressDisplay() {
-        // 计算进度百分比
-        const progress = ((this.currentIndex + 1) / this.totalImages) * 100;
-        
-        // 更新进度条
-        this.progressFill.style.width = `${progress}%`;
-        this.progressHandle.style.left = `${progress}%`;
-        
-        // 更新当前标记位置
-        this.currentMarker.style.left = `${progress}%`;
-    }
-    
-    preloadNextImage() {
-        const nextIndex = (this.currentIndex + 1) % this.totalImages;
-        const nextImage = this.images[nextIndex];
-        if (!nextImage || nextImage.placeholder) return;
-        
-        const imageUrl = `/images/${nextImage.path}`;
-        
-        // 如果尚未预加载，则预加载
-        if (!this.preloadedImages.has(imageUrl)) {
-            const img = new Image();
-            img.src = imageUrl;
-            this.preloadedImages.set(imageUrl, true);
+
+    adjustImageSize() {
+        const img = document.querySelector('.weather-image');
+        if (img) {
+            // 重置图片尺寸，让CSS自动处理
+            img.style.width = '';
+            img.style.height = '';
+            img.style.maxWidth = '';
+            img.style.maxHeight = '';
         }
     }
-    
-    nextHour() {
-        const nextIndex = (this.currentIndex + 1) % this.totalImages;
-        this.showImage(nextIndex);
-        
-        if (this.isPlaying) {
-            this.startAutoPlay();
+
+    async loadImages() {
+        try {
+            const response = await fetch('/get_images');
+            this.images = await response.json();
+            this.updateCategoryButtons();
+            this.updateCurrentDisplay();
+        } catch (error) {
+            console.error('加载图片失败:', error);
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = '加载图片失败，请刷新页面重试';
+            statusDiv.className = 'upload-status error';
         }
     }
-    
-    prevHour() {
-        const prevIndex = (this.currentIndex - 1 + this.totalImages) % this.totalImages;
-        this.showImage(prevIndex);
-        
-        if (this.isPlaying) {
-            this.startAutoPlay();
-        }
+
+    updateCategoryButtons() {
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            const category = btn.dataset.category;
+            const hasImages = this.images[category] && this.images[category].length > 0;
+            btn.style.opacity = hasImages ? '1' : '0.6';
+            btn.disabled = !hasImages;
+        });
     }
-    
-    jumpToHour(hourIndex) {
-        if (hourIndex >= 0 && hourIndex < this.totalImages) {
-            this.showImage(hourIndex);
+
+    updateCurrentDisplay() {
+        const categoryImages = this.images[this.currentCategory];
+        if (categoryImages && categoryImages.length > 0) {
+            this.showImage(this.currentImageIndex);
+        } else {
+            // 显示提示信息
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = `
+                <div class="no-images">
+                    <div>${this.currentCategory} 暂无数据</div>
+                    <div style="margin-top: 15px; font-size: 14px;">请先上传该类别图片</div>
+                </div>
+            `;
             
-            if (this.isPlaying) {
-                this.startAutoPlay();
+            // 更新时间显示为默认值
+            const defaultTime = new Date(2023, 0, 1, 1, 0, 0);
+            document.getElementById('currentImageTime').textContent = defaultTime.toLocaleString('zh-CN');
+            document.getElementById('imageCounter').textContent = '第 0/0 张';
+        }
+    }
+
+    switchCategory(category) {
+        // 更新按钮状态
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.disabled = false;
+        });
+        
+        const targetBtn = document.querySelector(`[data-category="${category}"]`);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+        }
+
+        this.currentCategory = category;
+        this.currentImageIndex = 0;
+        this.updateCurrentDisplay();
+        if (this.isPlaying) {
+            this.startAutoPlay();
+        }
+    }
+
+    showImage(index) {
+        const categoryImages = this.images[this.currentCategory];
+        if (!categoryImages || categoryImages.length === 0) {
+            this.updateCurrentDisplay();
+            return;
+        }
+
+        // 确保索引在有效范围内
+        if (index < 0) index = 0;
+        if (index >= categoryImages.length) index = categoryImages.length - 1;
+        
+        this.currentImageIndex = index;
+        
+        const imageData = categoryImages[index];
+        
+        // 更新图片显示 - 使用包装器确保正确布局
+        const container = document.getElementById('imageContainer');
+        container.innerHTML = `
+            <div class="image-wrapper">
+                <img src="${imageData.url}" 
+                     alt="${this.currentCategory} - ${imageData.time}"
+                     class="weather-image"
+                     onload="this.style.opacity='1'"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'image-error\'>图片加载失败</div>';">
+                <div class="image-time-overlay">${imageData.time}</div>
+            </div>
+        `;
+        
+        // 设置图片初始透明度，实现渐变效果
+        const img = container.querySelector('.weather-image');
+        if (img) {
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.3s ease';
+        }
+        
+        // 更新顶部时间显示
+        document.getElementById('currentImageTime').textContent = imageData.time;
+        document.getElementById('imageCounter').textContent = `第 ${index + 1}/${categoryImages.length} 张`;
+        
+        // 更新滑块
+        const slider = document.getElementById('timeSlider');
+        slider.value = index + 1;
+        slider.max = categoryImages.length;
+        
+        // 更新时间标签
+        this.updateTimeLabels(categoryImages.length);
+    }
+
+    updateTimeLabels(totalImages) {
+        const labelsContainer = document.querySelector('.time-labels');
+        if (totalImages >= 48) {
+            // 显示时间标签
+            const startTime = '01:00';
+            const midTime1 = '12:00';
+            const midTime2 = '23:00';
+            const endTime = '次日00:00';
+            
+            labelsContainer.innerHTML = `
+                <span>${startTime}</span>
+                <span>${midTime1}</span>
+                <span>${midTime2}</span>
+                <span>${endTime}</span>
+            `;
+        } else if (totalImages > 0) {
+            // 动态计算时间标签
+            const hoursPerImage = 24 / totalImages;
+            const labels = [];
+            
+            // 显示4个等间距的时间点
+            for (let i = 0; i < 4; i++) {
+                const hour = Math.floor(i * (totalImages - 1) / 3);
+                const time = new Date(2023, 0, 1, 1, 0, 0);
+                time.setHours(time.getHours() + hour);
+                
+                let label = '';
+                if (i === 0) {
+                    label = '01:00';
+                } else if (i === 3) {
+                    label = '次日00:00';
+                } else {
+                    const hourStr = time.getHours().toString().padStart(2, '0');
+                    label = `${hourStr}:00`;
+                }
+                
+                labels.push(`<span>${label}</span>`);
             }
             
-            this.updateStatus(`跳转到第${hourIndex + 1}小时`);
+            labelsContainer.innerHTML = labels.join('');
+        } else {
+            labelsContainer.innerHTML = `
+                <span>01:00</span>
+                <span>12:00</span>
+                <span>23:00</span>
+                <span>次日00:00</span>
+            `;
         }
     }
-    
+
+    nextImage() {
+        const categoryImages = this.images[this.currentCategory];
+        if (!categoryImages || categoryImages.length === 0) return;
+
+        let nextIndex = this.currentImageIndex + 1;
+        if (nextIndex >= categoryImages.length) {
+            nextIndex = 0; // 循环到第一张
+        }
+        
+        this.showImage(nextIndex);
+    }
+
+    startAutoPlay() {
+        this.stopAutoPlay();
+        const categoryImages = this.images[this.currentCategory];
+        if (categoryImages && categoryImages.length > 1 && this.isPlaying) {
+            this.autoPlayInterval = setInterval(() => {
+                this.nextImage();
+            }, this.playbackSpeed);
+        }
+    }
+
+    stopAutoPlay() {
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+    }
+
     togglePlayPause() {
         this.isPlaying = !this.isPlaying;
+        const playPauseBtn = document.getElementById('playPauseBtn');
         
         if (this.isPlaying) {
-            this.playIcon.className = 'fas fa-pause';
+            playPauseBtn.textContent = '暂停';
             this.startAutoPlay();
-            this.updateStatus('播放中');
         } else {
-            this.playIcon.className = 'fas fa-play';
+            playPauseBtn.textContent = '播放';
             this.stopAutoPlay();
-            this.updateStatus('已暂停');
         }
     }
-    
-    startAutoPlay() {
-        if (this.timer) {
-            clearTimeout(this.timer);
-        }
-        
-        const interval = this.duration / this.speedMultiplier;
-        this.timer = setTimeout(() => {
-            this.nextHour();
-        }, interval);
-    }
-    
-    stopAutoPlay() {
-        if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = null;
-        }
-    }
-    
-    handleTimelineClick(e) {
-        const rect = this.progressTrack.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const percentage = (clickX / rect.width) * 100;
-        
-        // 计算对应的小时
-        const targetIndex = Math.min(
-            Math.max(0, Math.floor((percentage / 100) * this.totalImages)),
-            this.totalImages - 1
-        );
-        
-        this.jumpToHour(targetIndex);
-        
+
+    updatePlaybackSpeed() {
+        // 如果正在播放，重启播放器以应用新速度
         if (this.isPlaying) {
             this.startAutoPlay();
         }
     }
-    
-    startDrag(e) {
-        e.preventDefault();
-        this.isDragging = true;
+
+    async uploadImages() {
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const categorySelect = document.getElementById('categorySelect');
+        const statusDiv = document.getElementById('uploadStatus');
         
-        // 暂停自动播放
-        const wasPlaying = this.isPlaying;
-        if (wasPlaying) {
-            this.isPlaying = false;
-            this.stopAutoPlay();
-            this.playIcon.className = 'fas fa-play';
-        }
-        
-        const onMouseMove = (e) => {
-            if (!this.isDragging) return;
-            
-            const rect = this.progressTrack.getBoundingClientRect();
-            let clickX = e.clientX - rect.left;
-            
-            // 限制在轨道范围内
-            clickX = Math.max(0, Math.min(clickX, rect.width));
-            
-            const percentage = (clickX / rect.width) * 100;
-            const targetIndex = Math.floor((percentage / 100) * this.totalImages);
-            
-            if (targetIndex !== this.currentIndex) {
-                this.showImage(targetIndex);
-            }
-        };
-        
-        const onMouseUp = () => {
-            this.isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            
-            // 恢复播放状态
-            if (wasPlaying) {
-                this.isPlaying = true;
-                this.playIcon.className = 'fas fa-pause';
-                this.startAutoPlay();
-            }
-        };
-        
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    }
-    
-    toggleUploadPanel() {
-        this.uploadPanel.classList.toggle('active');
-    }
-    
-    async uploadImage() {
-        const group = document.getElementById('upload-group').value;
-        const index = document.getElementById('upload-index').value;
-        const fileInput = document.getElementById('upload-file');
-        
-        if (!fileInput.files || fileInput.files.length === 0) {
-            this.showUploadResult('请选择要上传的图片文件', 'error');
+        // 验证类别
+        const category = categorySelect.value;
+        if (!category) {
+            statusDiv.textContent = '请选择数据类别';
+            statusDiv.className = 'upload-status error';
             return;
         }
         
-        const file = fileInput.files[0];
+        // 验证文件
+        const files = fileInput.files;
+        if (files.length === 0) {
+            statusDiv.textContent = '请选择要上传的图片文件';
+            statusDiv.className = 'upload-status error';
+            return;
+        }
+        
+        if (files.length > 48) {
+            statusDiv.textContent = `最多只能上传48张图片，您选择了${files.length}张`;
+            statusDiv.className = 'upload-status error';
+            return;
+        }
+
+        // 创建FormData对象
         const formData = new FormData();
+        formData.append('category', category);
         
-        formData.append('file', file);
-        formData.append('group', group);
-        formData.append('index', index);
-        
+        // 添加所有文件
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files[]', files[i]);
+        }
+
         try {
-            this.showUploadResult('正在上传...', 'info');
-            
-            const response = await fetch('/api/upload', {
+            statusDiv.textContent = '正在上传，请稍候...';
+            statusDiv.className = 'upload-status';
+
+            const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const result = await response.json();
-            
-            if (response.ok) {
-                this.showUploadResult(`✅ ${result.message}<br>路径: ${result.path}`, 'success');
+
+            if (result.success) {
+                statusDiv.textContent = result.message;
+                statusDiv.className = 'upload-status success';
                 
-                // 重新加载当前组以显示新上传的图片
-                setTimeout(() => {
-                    this.selectGroup(this.currentGroup);
+                // 延迟一下再重新加载图片，给服务器处理时间
+                setTimeout(async () => {
+                    await this.loadImages();
+                    
+                    // 自动切换到上传的类别
+                    this.switchCategory(result.category);
+                    
+                    // 重置表单（保留类别选择）
+                    fileInput.value = '';
+                    
+                    // 3秒后清除成功消息
+                    setTimeout(() => {
+                        statusDiv.textContent = '';
+                        statusDiv.className = 'upload-status';
+                    }, 3000);
                 }, 1000);
+                
             } else {
-                this.showUploadResult(`❌ 上传失败: ${result.error}`, 'error');
+                statusDiv.textContent = result.error || '上传失败';
+                statusDiv.className = 'upload-status error';
+                
+                // 5秒后清除错误消息
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'upload-status';
+                }, 5000);
             }
         } catch (error) {
             console.error('上传错误:', error);
-            this.showUploadResult(`❌ 网络错误: ${error.message}`, 'error');
-        }
-    }
-    
-    showUploadResult(message, type) {
-        this.uploadResult.innerHTML = message;
-        this.uploadResult.className = `upload-result ${type}`;
-        this.uploadResult.style.display = 'block';
-        
-        // 3秒后自动隐藏成功消息
-        if (type === 'success') {
+            statusDiv.textContent = `上传失败: ${error.message}`;
+            statusDiv.className = 'upload-status error';
+            
+            // 5秒后清除错误消息
             setTimeout(() => {
-                this.uploadResult.style.display = 'none';
-            }, 3000);
+                statusDiv.textContent = '';
+                statusDiv.className = 'upload-status';
+            }, 5000);
         }
-    }
-    
-    updateStatus(message, type = 'info') {
-        this.statusText.textContent = message;
-        
-        // 根据类型设置颜色
-        if (type === 'error') {
-            this.statusText.style.color = '#e74c3c';
-        } else if (type === 'warning') {
-            this.statusText.style.color = '#f39c12';
-        } else {
-            this.statusText.style.color = '#2ecc71';
-        }
-        
-        // 3秒后恢复默认状态
-        setTimeout(() => {
-            if (this.isPlaying) {
-                this.statusText.textContent = '播放中';
-            } else {
-                this.statusText.textContent = '已暂停';
-            }
-            this.statusText.style.color = '#94a3b8';
-        }, 3000);
     }
 }
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 页面加载完成，正在初始化系统...');
-    
-    // 确保所有资源加载完成后初始化
-    if (document.readyState === 'complete') {
-        window.carousel = new FixedTimeImageCarousel();
-    } else {
-        window.addEventListener('load', () => {
-            window.carousel = new FixedTimeImageCarousel();
-        });
-    }
-});
-
-// 页面可见性变化处理
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && window.carousel) {
-        window.carousel.stopAutoPlay();
-    } else if (!document.hidden && window.carousel && window.carousel.isPlaying) {
-        window.carousel.startAutoPlay();
-    }
+    window.weatherDisplay = new WeatherDisplay();
 });

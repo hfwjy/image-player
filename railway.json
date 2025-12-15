@@ -1,19 +1,10 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "pip install -r requirements.txt"
+      "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "gunicorn --worker-class gevent --workers 2 --threads 4 --bind 0.0.0.0:$PORT app:app"
-  },
-  "mounts": {
-    "data": {
-      "mountPath": "/data",
-      "sizeGB": 5
-    }
-  },
-  "variables": {
-    "STORAGE_PATH": "/data",
-    "PYTHONUNBUFFERED": "1"
+      "startCommand": "python app.py",
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10
   }
 }
