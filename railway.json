@@ -1,12 +1,21 @@
 {
-    "build": {
-      "builder": "NIXPACKS",
-      "buildCommand": "pip install -r requirements.txt"
-    },
-    "deploy": {
-      "startCommand": "gunicorn app:app",
-      "healthcheckPath": "/api/health",
-      "restartPolicyType": "ON_FAILURE",
-      "restartPolicyMaxRetries": 10
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pip install -r requirements.txt"
+  },
+  "deploy": {
+    "startCommand": "gunicorn --worker-class gevent --workers 2 --threads 4 --bind 0.0.0.0:$PORT app:app",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  },
+  "mounts": {
+    "data": {
+      "mountPath": "/data",
+      "sizeGB": 5
     }
+  },
+  "variables": {
+    "STORAGE_PATH": "/data",
+    "PYTHONUNBUFFERED": "1"
   }
+}
