@@ -8,12 +8,12 @@
   },
   "mounts": {
     "data": {
-      "mountPath": "/uploads",
+      "mountPath": "/data",
       "sizeGB": 5
     }
   },
   "variables": {
-    "STORAGE_PATH": "/uploads",
+    "STORAGE_PATH": "/data",
     "PYTHONUNBUFFERED": "1"
   }
 }
