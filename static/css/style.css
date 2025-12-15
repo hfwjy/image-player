@@ -169,7 +169,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 45vh;  /* 缩小高度 */
-    max-height: 45vh;  /* 限制最大高度 */
+    max-height: 90vh;  /* 限制最大高度 */
     padding: 10px;
     overflow: hidden;  /* 防止内容溢出 */
     border: 1px solid rgba(255, 255, 255, 0.1);
