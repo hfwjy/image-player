@@ -9,94 +9,176 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="category-buttons">
-                <button class="category-btn active" data-category="台海温度">
-                    <i class="fas fa-thermometer-half"></i> 台海温度
-                </button>
-                <button class="category-btn" data-category="台海风速">
-                    <i class="fas fa-wind"></i> 台海风速
-                </button>
-                <button class="category-btn" data-category="西藏温度">
-                    <i class="fas fa-thermometer-half"></i> 西藏温度
-                </button>
-                <button class="category-btn" data-category="西藏风速">
-                    <i class="fas fa-wind"></i> 西藏风速
+        <header class="header">
+            <h1><i class="fas fa-cloud-sun"></i> 气象数据可视化</h1>
+            <div class="header-controls">
+                <div class="time-display">
+                    <i class="fas fa-clock"></i>
+                    <span id="current-time">2023-01-01 01:00</span>
+                </div>
+                <button id="upload-toggle-btn" class="upload-toggle-btn">
+                    <i class="fas fa-upload"></i> 上传
                 </button>
             </div>
-        </div>
+        </header>
 
-        <div class="main-content">
-            <div class="control-bar">
+        <main class="main-content">
+            <div class="control-panel">
+                <div class="group-selector">
+                    <div class="group-buttons">
+                        <button class="group-btn active" data-group="台海温度">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span>台海温度</span>
+                        </button>
+                        <button class="group-btn" data-group="台海风速">
+                            <i class="fas fa-wind"></i>
+                            <span>台海风速</span>
+                        </button>
+                        <button class="group-btn" data-group="西藏温度">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span>西藏温度</span>
+                        </button>
+                        <button class="group-btn" data-group="西藏风速">
+                            <i class="fas fa-wind"></i>
+                            <span>西藏风速</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="playback-controls">
-                    <span><i class="fas fa-tachometer-alt"></i> 速度:</span>
-                    <select id="playbackSpeed" class="speed-select">
-                        <option value="5000">0.5x</option>
-                        <option value="3000">0.8x</option>
-                        <option value="2000" selected>1x</option>
-                        <option value="1000">2x</option>
-                        <option value="500">4x</option>
-                        <option value="250">8x</option>
-                    </select>
-                    <button id="playPauseBtn" class="play-btn">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                    <button id="uploadToggleBtn" class="upload-toggle-btn">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </button>
-                </div>
-                <div class="time-display" id="timeDisplay">
-                    <span id="currentImageTime"><i class="far fa-clock"></i> 2023-01-01 01:00:00</span>
-                </div>
-            </div>
-
-            <div class="image-display-area">
-                <div class="image-container" id="imageContainer">
-                    <!-- 图片将在这里显示 -->
-                    <div class="no-images">
-                        <i class="fas fa-cloud-sun fa-2x"></i>
-                        <p>请上传图片数据</p>
+                    <div class="control-buttons">
+                        <button id="prev-btn" title="上一张">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button id="play-btn" class="play" title="播放/暂停">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button id="next-btn" title="下一张">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                        <button id="stop-btn" title="停止">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="speed-control">
+                        <label>速度:</label>
+                        <input type="range" id="speed-slider" min="1" max="10" value="3">
+                        <span id="speed-value">3x</span>
+                    </div>
+                    
+                    <div class="image-navigation">
+                        <button id="jump-start" title="开始">
+                            <i class="fas fa-fast-backward"></i>
+                        </button>
+                        <button id="jump-prev-hour" title="前一张">
+                            <i class="fas fa-backward"></i>
+                        </button>
+                        <button id="jump-next-hour" title="后一张">
+                            <i class="fas fa-forward"></i>
+                        </button>
+                        <button id="jump-end" title="结束">
+                            <i class="fas fa-fast-forward"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="image-time-info">
-                    <div class="image-time-overlay" id="imageTimeOverlay">
-                        <i class="far fa-clock"></i> 2023-01-01 01:00:00
+
+                <!-- 隐藏的上传区域 -->
+                <div class="upload-section" id="upload-section" style="display: none;">
+                    <h3><i class="fas fa-upload"></i> 上传图片</h3>
+                    <form id="upload-form">
+                        <select id="upload-group" required>
+                            <option value="">选择分组</option>
+                            <option value="台海温度">台海温度</option>
+                            <option value="台海风速">台海风速</option>
+                            <option value="西藏温度">西藏温度</option>
+                            <option value="西藏风速">西藏风速</option>
+                        </select>
+                        
+                        <div class="file-input-container">
+                            <div class="file-drop-area" id="file-drop-area">
+                                <i class="fas fa-cloud-upload"></i>
+                                <p>拖拽文件或点击选择</p>
+                                <p class="file-hint">支持多选</p>
+                            </div>
+                            <input type="file" id="file-input" accept=".jpg,.jpeg,.png,.gif" multiple required>
+                        </div>
+                        
+                        <div class="file-preview" id="file-preview">
+                            <!-- 文件预览将在这里显示 -->
+                        </div>
+                        
+                        <div class="upload-actions">
+                            <button type="submit" class="upload-btn" id="upload-submit-btn">
+                                <i class="fas fa-upload"></i> 上传
+                            </button>
+                            <button type="button" class="cancel-btn" id="upload-cancel-btn">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 主显示区域 -->
+            <div class="visualization-area">
+                <div class="image-display-container">
+                    <div class="image-viewer" id="image-viewer">
+                        <div class="image-container">
+                            <img id="current-image" src="" alt="气象数据图">
+                            <div class="loading-overlay" id="loading-overlay">
+                                <div class="loading-spinner">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                            </div>
+                            <div class="no-image-overlay" id="no-image-overlay" style="display: none;">
+                                <div class="no-image-content">
+                                    <i class="fas fa-images"></i>
+                                    <p>暂无数据</p>
+                                    <button class="upload-action-btn" id="upload-action-btn">
+                                        <i class="fas fa-upload"></i> 上传图片
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="image-info-minimal">
+                            <span id="current-group-name">台海温度</span>
+                            <span id="image-position">1/48</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间线 -->
+                <div class="timeline-section">
+                    <div class="timeline-container">
+                        <div class="timeline-bar">
+                            <div class="timeline-progress" id="timeline-progress"></div>
+                            <div class="timeline-marker" id="timeline-marker"></div>
+                        </div>
+                        
+                        <div class="timeline-controls">
+                            <input type="range" id="time-slider" min="0" max="47" value="0" class="timeline-slider">
+                            <div class="time-labels">
+                                <span>01-01 01:00</span>
+                                <span>01-02 00:00</span>
+                                <span>01-03 00:00</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </main>
 
-            <div class="progress-container">
-                <input type="range" id="timeSlider" class="time-slider" min="1" max="48" value="1">
-                <div class="time-labels">
-                    <span>01:00</span>
-                    <span>12:00</span>
-                    <span>23:00</span>
-                    <span>次日00:00</span>
-                </div>
+        <!-- 简化版页脚 -->
+        <footer class="footer">
+            <div class="status-minimal">
+                <span class="status-dot online"></span>
+                <span>系统在线</span>
             </div>
-        </div>
-
-        <div class="upload-section" id="uploadSection" style="display: none;">
-            <form id="uploadForm">
-                <div class="upload-controls">
-                    <select id="categorySelect" required>
-                        <option value="">选择类别</option>
-                        <option value="台海温度">台海温度</option>
-                        <option value="台海风速">台海风速</option>
-                        <option value="西藏温度">西藏温度</option>
-                        <option value="西藏风速">西藏风速</option>
-                    </select>
-                    <input type="file" id="fileInput" multiple accept="image/*" required>
-                    <button type="submit" class="upload-btn">
-                        <i class="fas fa-upload"></i> 上传
-                    </button>
-                </div>
-                <div class="upload-status" id="uploadStatus"></div>
-            </form>
-        </div>
+        </footer>
     </div>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

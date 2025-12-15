@@ -1,121 +1,114 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, jsonify, send_from_directory, request
 import os
-from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-import shutil
+from werkzeug.utils import secure_filename
+from pathlib import Path
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
 
-# 支持的图片格式
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
+# 配置
+BASE_DIR = Path(__file__).parent
+IMAGE_BASE_DIR = BASE_DIR / "data" / "images"
+UPLOAD_FOLDER = IMAGE_BASE_DIR
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# 创建必要的目录
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-for category in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
-    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], category), exist_ok=True)
+# 确保目录存在
+IMAGE_BASE_DIR.mkdir(parents=True, exist_ok=True)
+for folder in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
+    (IMAGE_BASE_DIR / folder).mkdir(exist_ok=True)
+
+# 起始时间：2023年1月1日 01:00:00
+START_TIME = datetime(2023, 1, 1, 1, 0, 0)
+HOURS_PER_SET = 48
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_image_groups():
+    """获取所有图片组信息"""
+    groups = {}
+    for folder in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
+        folder_path = IMAGE_BASE_DIR / folder
+        if folder_path.exists():
+            images = sorted([f for f in os.listdir(folder_path) 
+                           if allowed_file(f)])
+            groups[folder] = images
+    return groups
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/get_images')
-def get_images():
-    """获取所有图片信息"""
-    images_data = {}
-    
-    for category in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
-        category_path = os.path.join(app.config['UPLOAD_FOLDER'], category)
-        if os.path.exists(category_path):
-            images = []
-            # 获取按名称排序的图片
-            files = sorted([f for f in os.listdir(category_path) if allowed_file(f)])
-            for i, filename in enumerate(files[:48]):  # 限制最多48张
-                # 计算时间：从2023-01-01 01:00:00开始，每张图间隔1小时
-                image_time = datetime(2023, 1, 1, 1, 0, 0) + timedelta(hours=i)
-                images.append({
-                    'url': f'/uploads/{category}/{filename}',
-                    'time': image_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'hour': i + 1,
-                    'filename': filename
-                })
-            images_data[category] = images
-        else:
-            images_data[category] = []
-    
-    return jsonify(images_data)
+@app.route('/api/groups')
+def get_groups():
+    groups = get_image_groups()
+    return jsonify({
+        'groups': list(groups.keys()),
+        'images': {k: len(v) for k, v in groups.items()}
+    })
 
-@app.route('/upload', methods=['POST'])
-def upload_images():
-    """上传一组图片"""
-    try:
-        # 检查是否有文件被上传
-        if 'files[]' not in request.files:
-            return jsonify({'error': '没有文件被上传', 'received_files': []}), 400
-        
-        category = request.form.get('category', '')
-        if not category or category not in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
-            return jsonify({'error': '请选择正确的类别', 'received_category': category}), 400
-        
-        files = request.files.getlist('files[]')
-        
-        # 检查文件数量
-        if len(files) == 0:
-            return jsonify({'error': '没有选择任何文件'}), 400
-        
-        # 不再限制必须48张，可以接受任意数量但最多48张
-        if len(files) > 48:
-            return jsonify({'error': f'最多只能上传48张图片，您选择了{len(files)}张'}), 400
-        
-        # 清空目标文件夹
-        target_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
-        shutil.rmtree(target_folder, ignore_errors=True)
-        os.makedirs(target_folder, exist_ok=True)
-        
-        # 按顺序保存文件
-        uploaded_files = []
-        
-        # 首先按文件名排序
-        sorted_files = sorted(files, key=lambda x: x.filename)
-        
-        for i, file in enumerate(sorted_files):
-            if file and file.filename != '' and allowed_file(file.filename):
-                # 使用原始文件名，但要确保顺序
-                original_name = file.filename
-                # 为了保持顺序，我们可以添加前缀
-                new_filename = f"{i+1:03d}_{original_name}"
-                filepath = os.path.join(target_folder, new_filename)
-                file.save(filepath)
-                uploaded_files.append(new_filename)
-            else:
-                return jsonify({'error': f'文件 {file.filename if file else "未知"} 格式不支持'}), 400
-        
-        print(f"成功上传 {len(uploaded_files)} 张图片到 {category}")
-        
-        return jsonify({
-            'success': True,
-            'message': f'成功上传{len(uploaded_files)}张图片',
-            'category': category,
-            'count': len(uploaded_files)
+@app.route('/api/images/<group_name>')
+def get_images(group_name):
+    if group_name not in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
+        return jsonify({'error': 'Invalid group name'}), 400
+    
+    folder_path = IMAGE_BASE_DIR / group_name
+    if not folder_path.exists():
+        return jsonify({'images': []})
+    
+    images = sorted([f for f in os.listdir(folder_path) 
+                    if allowed_file(f)])
+    
+    # 为每张图片生成时间戳
+    images_with_time = []
+    for i, img in enumerate(images[:HOURS_PER_SET]):
+        current_time = START_TIME + timedelta(hours=i)
+        images_with_time.append({
+            'filename': img,
+            'time': current_time.strftime('%Y-%m-%d %H:%M'),
+            'index': i,
+            'url': f'/images/{group_name}/{img}'
         })
-        
-    except Exception as e:
-        print(f"上传错误: {str(e)}")
-        return jsonify({'error': f'服务器错误: {str(e)}'}), 500
+    
+    return jsonify({
+        'images': images_with_time,
+        'group': group_name,
+        'total': len(images_with_time)
+    })
 
-@app.route('/uploads/<category>/<filename>')
-def uploaded_file(category, filename):
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], category), filename)
+@app.route('/images/<group_name>/<filename>')
+def serve_image(group_name, filename):
+    return send_from_directory(IMAGE_BASE_DIR / group_name, filename)
 
-# 错误处理
-@app.errorhandler(413)
-def too_large(e):
-    return jsonify({'error': '文件太大，总大小不能超过100MB'}), 413
+@app.route('/api/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    group = request.form.get('group')
+    if not group or group not in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
+        return jsonify({'error': 'Invalid group'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        try:
+            file.save(IMAGE_BASE_DIR / group / filename)
+            return jsonify({
+                'success': True, 
+                'filename': filename
+            })
+        except Exception as e:
+            return jsonify({'error': f'Save failed: {str(e)}'}), 500
+    
+    return jsonify({'error': 'File type not allowed'}), 400
+
+@app.route('/api/health')
+def health_check():
+    return jsonify({'status': 'healthy'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
