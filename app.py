@@ -18,7 +18,7 @@ for folder in ['台海温度', '台海风速', '西藏温度', '西藏风速']:
     (IMAGE_BASE_DIR / folder).mkdir(exist_ok=True)
 
 # 起始时间：2023年1月1日 01:00:00
-START_TIME = datetime(2023, 1, 1, 1, 0, 0)
+START_TIME = datetime(2025, 1, 7, 1, 0, 0)
 HOURS_PER_SET = 48
 
 def allowed_file(filename):
